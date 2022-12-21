@@ -7,7 +7,6 @@ pub struct YClassConfig {
     #[cfg(debug_assertions)]
     pub last_address: Option<usize>,
 
-    pub plugin_path: Option<PathBuf>,
     pub recent_projects: Option<HashSet<PathBuf>>,
     pub dpi: Option<f32>,
 }

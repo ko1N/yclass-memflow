@@ -5,18 +5,18 @@ use eframe::{
 };
 use memflow::prelude::v1::*;
 
-pub struct ProcessAttachWindow {
+pub struct MemflowAttachWindow {
     shown: bool,
     filter: String,
-    processes: Vec<ProcessInfo>,
+    connectors: Vec<String>,
     state: StateRef,
 }
 
-impl ProcessAttachWindow {
+impl MemflowAttachWindow {
     pub fn new(state: StateRef) -> Self {
         Self {
             state,
-            processes: vec![],
+            connectors: vec![],
             shown: false,
             filter: "".to_owned(),
         }
@@ -27,22 +27,17 @@ impl ProcessAttachWindow {
 
         if self.shown {
             let state = self.state.borrow();
-            let mut os = state.os.write();
-            if let Some(os) = os.as_mut() {
-                self.processes = os.process_info_list().unwrap_or_default();
-            } else {
-                self.processes = vec![];
-            }
+            self.connectors = state.inventory.available_connectors();
         }
     }
 
-    pub fn show(&mut self, ctx: &Context) -> Option<u32> {
+    pub fn show(&mut self, ctx: &Context) -> Option<OsInstanceArcBox<'static>> {
         if !self.shown {
             return None;
         }
 
-        let mut attach_pid = None;
-        Window::new("Attach to process")
+        let mut os = None;
+        Window::new("Load Memflow")
             .collapsible(false)
             .open(&mut self.shown)
             .default_size(vec2(180., 320.))
@@ -56,12 +51,7 @@ impl ProcessAttachWindow {
 
                     if ui.button("Refresh").clicked() || r.changed() {
                         let state = self.state.borrow();
-                        let mut os = state.os.write();
-                        if let Some(os) = os.as_mut() {
-                            self.processes = os.process_info_list().unwrap_or_default();
-                        } else {
-                            self.processes = vec![];
-                        }
+                        self.connectors = state.inventory.available_connectors();
                     }
 
                     ui.add_space(4.);
@@ -69,24 +59,29 @@ impl ProcessAttachWindow {
                     ui.add_space(4.);
 
                     ScrollArea::vertical().show(ui, |ui| {
-                        for pe in self.processes.iter().filter(|pe| {
+                        for ce in self.connectors.iter().filter(|ce| {
                             self.filter.is_empty()
-                                || pe.name.to_lowercase().contains(&self.filter.to_lowercase())
+                                || ce.to_lowercase().contains(&self.filter.to_lowercase())
                         }) {
                             if ui
-                                .button(
-                                    RichText::new(format!("{} - {}", pe.name, pe.pid))
-                                        .font(FontId::proportional(16.)),
-                                )
+                                .button(RichText::new(ce).font(FontId::proportional(16.)))
                                 .clicked()
                             {
-                                attach_pid = Some(pe.pid);
+                                let state = self.state.borrow();
+                                os = state
+                                    .inventory
+                                    .builder()
+                                    .connector("kvm")
+                                    //.args("".parse())
+                                    .os("win32")
+                                    .build()
+                                    .ok(); // TODO: handle error
                             }
                         }
                     });
                 });
             });
 
-        attach_pid
+        os
     }
 }

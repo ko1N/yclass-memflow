@@ -168,6 +168,10 @@ impl App for YClassApp {
                     state.dummy = false;
                 }
             }
+            Some(ToolBarResponse::MemflowAttach(os)) => {
+                let state = self.state.borrow_mut();
+                *state.os.write() = Some(os);
+            }
             Some(ToolBarResponse::ProcessDetach) => {
                 let mut state = self.state.borrow_mut();
 
@@ -185,16 +189,17 @@ impl App for YClassApp {
             Some(ToolBarResponse::ProcessAttach(pid)) => {
                 let mut state = self.state.borrow_mut();
 
-                if let Some(mut process) = state
-                    .process
-                    .clone() /* ??? */
-                    .try_write()
-                {
-                    match Process::attach(pid, &state.config) {
-                        Ok(proc) => {
-                            frame.set_window_title(&format!("YClass - Attached to {pid}"));
-                            if let Process::Internal((op, _)) = &proc {
-                                match op.name() {
+                let os = state.os.read().clone();
+                if let Some(os) = os {
+                    if let Some(mut process) = state
+                        .process
+                        .clone() /* ??? */
+                        .try_write()
+                    {
+                        match Process::attach(os.clone(), pid) {
+                            Ok(proc) => {
+                                frame.set_window_title(&format!("YClass - Attached to {pid}"));
+                                match proc.name() {
                                     Ok(name) => {
                                         state.config.last_attached_process_name = Some(name);
                                         state.config.save();
@@ -205,15 +210,17 @@ impl App for YClassApp {
                                             .error(format!("Failed to get process name: {e}"))
                                     }
                                 }
-                            }
 
-                            *process = Some(proc);
+                                *process = Some(proc);
+                            }
+                            Err(e) => {
+                                state
+                                    .toasts
+                                    .error(format!("Failed to attach to process.\n{e}"));
+                            }
                         }
-                        Err(e) => {
-                            state.toasts.error(format!(
-                                "Failed to attach to process.\nPossibly plugin error.\n{e}"
-                            ));
-                        }
+                    } else {
+                        state.toasts.warning("Memflow is not attached to a target");
                     }
                 } else {
                     state.toasts.warning("Process is currently in use");

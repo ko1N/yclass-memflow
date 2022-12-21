@@ -1,4 +1,4 @@
-use super::{GeneratorWindow, ProcessAttachWindow, SpiderWindow};
+use super::{GeneratorWindow, MemflowAttachWindow, ProcessAttachWindow, SpiderWindow};
 use crate::{
     class::ClassList,
     field::FieldKind,
@@ -8,7 +8,7 @@ use eframe::{
     egui::{style::Margin, Button, Context, Frame, RichText, TopBottomPanel, Ui, WidgetText},
     epaint::{vec2, Color32, Rounding},
 };
-use memflex::external::ProcessIterator;
+use memflow::prelude::v1::*;
 
 macro_rules! create_change_field_type_group {
     ($ui:ident, $r:ident, $fg:ident, $bg:ident, $($size:ident),*) => {
@@ -28,6 +28,7 @@ macro_rules! create_change_field_type_group {
 }
 
 pub enum ToolBarResponse {
+    MemflowAttach(OsInstanceArcBox<'static>),
     ProcessAttach(u32),
     ProcessDetach,
     Add(usize),
@@ -37,6 +38,7 @@ pub enum ToolBarResponse {
 }
 
 pub struct ToolBarPanel {
+    mf_attach_window: MemflowAttachWindow,
     ps_attach_window: ProcessAttachWindow,
     generator_window: GeneratorWindow,
     spider_window: SpiderWindow,
@@ -47,6 +49,7 @@ impl ToolBarPanel {
     pub fn new(state: StateRef) -> Self {
         Self {
             state,
+            mf_attach_window: MemflowAttachWindow::new(state),
             ps_attach_window: ProcessAttachWindow::new(state),
             generator_window: GeneratorWindow::new(state),
             spider_window: SpiderWindow::new(state),
@@ -55,6 +58,11 @@ impl ToolBarPanel {
 
     pub fn show(&mut self, ctx: &Context) -> Option<ToolBarResponse> {
         let mut response = None;
+
+        if let Some(os) = self.mf_attach_window.show(ctx) {
+            response = Some(ToolBarResponse::MemflowAttach(os));
+            self.mf_attach_window.toggle();
+        }
 
         if let Some(pid) = self.ps_attach_window.show(ctx) {
             response = Some(ToolBarResponse::ProcessAttach(pid));
@@ -161,6 +169,10 @@ impl ToolBarPanel {
         let state = &mut *self.state.borrow_mut();
         let input = &*ctx.input();
 
+        if state.hotkeys.pressed("attach_memflow", input) {
+            self.mf_attach_window.toggle();
+        }
+
         if state.hotkeys.pressed("attach_process", input) {
             self.ps_attach_window.toggle();
         }
@@ -227,14 +239,28 @@ impl ToolBarPanel {
     fn process_menu(&mut self, ui: &mut Ui, response: &mut Option<ToolBarResponse>) {
         ui.set_width(200.);
 
-        let state = &mut *self.state.borrow_mut();
+        if shortcut_button(
+            ui,
+            &mut *self.state.borrow_mut(),
+            "attach_memflow",
+            "Attach memflow",
+        ) {
+            self.mf_attach_window.toggle();
+            ui.close_menu();
+        }
 
-        if shortcut_button(ui, state, "attach_process", "Attach to process") {
+        if shortcut_button(
+            ui,
+            &mut *self.state.borrow_mut(),
+            "attach_process",
+            "Attach to process",
+        ) {
             self.ps_attach_window.toggle();
             ui.close_menu();
         }
 
         // Reattach to last process
+        let state = &mut *self.state.borrow_mut();
         if let Some(name) = state.config.last_attached_process_name.as_ref().cloned() {
             if shortcut_button(ui, state, "attach_recent", format!("Attach to {name}")) {
                 attach_to_process(state, &name, response);
@@ -315,19 +341,25 @@ fn shortcut_button(
 }
 
 fn attach_to_process(state: &mut GlobalState, name: &str, response: &mut Option<ToolBarResponse>) {
-    let last_proc = match ProcessIterator::new() {
-        Ok(mut piter) => piter.find(|pe| pe.name.eq_ignore_ascii_case(name)),
-        Err(e) => {
-            state
-                .toasts
-                .error(format!("Failed to iterate over processes. {e}"));
-            return;
-        }
-    };
+    let mut os = state.os.write();
+    if let Some(os) = os.as_mut() {
+        let mut process = None;
+        let callback = &mut |data: ProcessInfo| {
+            if name.eq_ignore_ascii_case(data.name.as_ref()) {
+                process = Some(data);
+                false
+            } else {
+                true
+            }
+        };
+        os.process_info_list_callback(callback.into()).ok();
 
-    if let Some(pe) = last_proc {
-        *response = Some(ToolBarResponse::ProcessAttach(pe.id));
+        if let Some(pe) = process {
+            *response = Some(ToolBarResponse::ProcessAttach(pe.pid));
+        } else {
+            state.toasts.error(format!("Failed to find {name}"));
+        }
     } else {
-        state.toasts.error(format!("Failed to find {name}"));
+        state.toasts.error("Memflow is not loaded");
     }
 }

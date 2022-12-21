@@ -12,11 +12,15 @@ use std::{
     sync::Arc,
 };
 
+use memflow::prelude::v1::*;
+
 pub type StateRef = &'static RefCell<GlobalState>;
 
 pub struct GlobalState {
     pub last_opened_project: Option<PathBuf>,
     pub selection: Option<Selection>,
+    pub inventory: Inventory,
+    pub os: Arc<RwLock<Option<OsInstanceArcBox<'static>>>>,
     pub process: Arc<RwLock<Option<Process>>>,
     pub hotkeys: HotkeyManager,
     pub inspect_address: usize,
@@ -32,6 +36,8 @@ impl Default for GlobalState {
     fn default() -> Self {
         let config = YClassConfig::load_or_default();
 
+        let inventory = Inventory::scan();
+
         Self {
             #[cfg(debug_assertions)]
             inspect_address: config.last_address.unwrap_or(0),
@@ -39,6 +45,8 @@ impl Default for GlobalState {
             class_list: ClassList::default(),
             last_opened_project: None,
             toasts: Toasts::default(),
+            inventory,
+            os: Arc::default(),
             process: Arc::default(),
             #[cfg(not(debug_assertions))]
             inspect_address: 0,

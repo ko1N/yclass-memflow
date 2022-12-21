@@ -1,15 +1,15 @@
 [package]
-name = "yclass"
+name = "yclass-memflow"
 version = "0.1.0"
 edition = "2021"
 description = "Inspect and recreate in-memory data structures"
 license = "MIT"
-authors = ["ItsEthra"]
-repository = "https://github.com/ItsEthra/yclass"
+authors = ["ItsEthra", "ko1N"]
+repository = "https://github.com/ko1N/yclass-memflow"
 readme = "README.md"
 
 [dependencies]
-memflex = { git = "https://github.com/ItsEthra/memflex", features = ["external"] }
+memflow = { version = "^0.2.0-beta9", features = ["plugins"] }
 serde = { version = "1.0", features = ["derive"] }
 parking_lot = "0.12"
 egui_extras = "0.20"

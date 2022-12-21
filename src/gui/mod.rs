@@ -4,6 +4,8 @@ mod tool_bar;
 pub use tool_bar::*;
 mod process_attach;
 pub use process_attach::*;
+mod memflow_attach;
+pub use memflow_attach::*;
 mod inspector;
 pub use inspector::*;
 mod generator;
