@@ -16,7 +16,7 @@ cargo r --release
     * `I8`, `I16`, `I32`, `I64`
     * `U8`, `U16`, `U32`, `U64`
     * `F32`, `F64`
-    * `Pointer`
+    * `Pointer`, `String Pointer`
     * `Bool`
 * Generating Rust/C++ code out of classes.
 * Saving/Opening project files.
@@ -35,6 +35,7 @@ cargo r --release
 * [x] - ~~Writing values.~~
 * [x] - ~~Save/Open project files.~~
 * [x] - ~~Pointer preview on hover with unknown fields.~~
+* [ ] - Show in which module pointer address falls.
 * [ ] - Disassembly of function pointers.
 
 # Plugin API
