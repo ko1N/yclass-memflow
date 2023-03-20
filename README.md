@@ -5,7 +5,7 @@ A program that allows you to inspect and recreate data structures of other proce
 # Installation
 To compile `YClass` you will need [Rust](https://www.rust-lang.org/tools/install).
 ```
-git clone https://github.com/ItsEthra/yclass
+git clone https://github.com/ko1N/yclass-memflow
 cd yclass
 cargo r --release
 ```
