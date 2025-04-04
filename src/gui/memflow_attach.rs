@@ -67,11 +67,12 @@ impl MemflowAttachWindow {
                                 .button(RichText::new(ce).font(FontId::proportional(16.)))
                                 .clicked()
                             {
+                                log::info!("attaching to {ce}");
                                 let state = self.state.borrow();
                                 os = state
                                     .inventory
                                     .builder()
-                                    .connector("kvm")
+                                    .connector(ce.as_str())
                                     //.args("".parse())
                                     .os("win32")
                                     .build()
@@ -81,7 +82,6 @@ impl MemflowAttachWindow {
                     });
                 });
             });
-
         os
     }
 }
