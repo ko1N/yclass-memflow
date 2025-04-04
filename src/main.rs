@@ -38,7 +38,7 @@ fn main() {
     env_logger::builder().init();
 
     eframe::run_native(
-        "YClass",
+        "memclass",
         NativeOptions {
             default_theme: Theme::Dark,
             ..Default::default()
