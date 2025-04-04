@@ -34,6 +34,9 @@ use std::cell::RefCell;
 const FID_M: FontId = FontId::monospace(16.);
 
 fn main() {
+
+    env_logger::builder().init();
+
     eframe::run_native(
         "YClass",
         NativeOptions {
