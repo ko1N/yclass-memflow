@@ -232,6 +232,7 @@ impl App for YClassApp {
 
         self.class_list.show(ctx);
         self.inspector.show(ctx);
+        crate::gui::show_logger(ctx);
 
         let mut style = (*ctx.style()).clone();
         let saved = style.clone();

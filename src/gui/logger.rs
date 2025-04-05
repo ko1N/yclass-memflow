@@ -1,7 +1,7 @@
-use eframe::egui;
+use eframe::egui::{self, TopBottomPanel};
 
-fn ui(ctx: &egui::Context) {
-    egui::Window::new("Log").show(ctx, |ui| {
+pub fn show_logger(ctx: &egui::Context) {
+    TopBottomPanel::bottom("Log").show(ctx, |ui| {
         // draws the logger ui.
         egui_logger::logger_ui().show(ui);
     });
