@@ -1,7 +1,7 @@
 use crate::state::StateRef;
 use eframe::{
-    egui::{Context, RichText, ScrollArea, TextEdit, Window},
-    epaint::{vec2, FontId},
+    egui::{Context, Window},
+    epaint::vec2,
 };
 use memflow::prelude::v1::*;
 

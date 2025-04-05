@@ -16,3 +16,5 @@ mod spider;
 pub use spider::*;
 mod utils;
 pub use utils::*;
+mod logger;
+pub use logger::*;

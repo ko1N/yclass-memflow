@@ -11,7 +11,7 @@ use crate::{
     value::Value,
 };
 use eframe::{
-    egui::{Button, ComboBox, Context, RichText, TextEdit, Ui, Window},
+    egui::*,
     epaint::{vec2, Color32, FontId},
 };
 use egui_extras::{Column, TableBuilder};
@@ -146,9 +146,10 @@ impl SpiderWindow {
                     let w = ui.available_width() / 2.;
 
                     ui.horizontal(|ui| {
-                        ui.set_enabled(enabled);
-                        ui.add(TextEdit::singleline(bind).desired_width(w));
-                        ui.label(label);
+                        ui.add_enabled_ui(enabled, |ui|{
+                            ui.add(TextEdit::singleline(bind).desired_width(w));
+                            ui.label(label);
+                        });
                     });
                 }
 
@@ -157,22 +158,22 @@ impl SpiderWindow {
                 show_edit(enabled, ui, &mut self.struct_size, "Structure size");
                 show_edit(enabled, ui, &mut self.alignment, "Alignment");
                 ui.scope(|ui| {
-                    ui.set_enabled(enabled);
-
-                    ComboBox::new("_spider_select_kind", "Field type")
-                        .width(ui.available_width() / 2. + 8. /* No clue */)
-                        .selected_text(self.field_kind.label().unwrap())
-                        .show_ui(ui, |ui| {
-                            for (var, label) in FieldKind::NAMED_VARIANTS {
-                                if ui
-                                    .selectable_label(*var == self.field_kind, *label)
-                                    .clicked()
-                                {
-                                    self.field_kind = *var;
-                                    self.alignment.set(var.size(), var.size().to_string());
+                    ui.add_enabled_ui(enabled, |ui|{
+                        ComboBox::new("_spider_select_kind", "Field type")
+                            .width(ui.available_width() / 2. + 8. /* No clue */)
+                            .selected_text(self.field_kind.label().unwrap())
+                            .show_ui(ui, |ui| {
+                                for (var, label) in FieldKind::NAMED_VARIANTS {
+                                    if ui
+                                        .selectable_label(*var == self.field_kind, *label)
+                                        .clicked()
+                                    {
+                                        self.field_kind = *var;
+                                        self.alignment.set(var.size(), var.size().to_string());
+                                    }
                                 }
-                            }
-                        });
+                            });
+                    });
                 });
 
                 ui.separator();
@@ -308,8 +309,8 @@ impl SpiderWindow {
                 row.col(|ui| _ = ui.label("Current"));
             })
             .body(|body| {
-                body.rows(DATA_HEIGHT, self.results.len(), |idx, mut row| {
-                    let result = &self.results[idx];
+                body.rows(DATA_HEIGHT, self.results.len(), |mut row| {
+                    let result = &self.results[row.index()];
 
                     for offset in result.parent_offsets.iter() {
                         row.col(|ui| _ = ui.label(format!("{offset:X}")));
@@ -338,13 +339,13 @@ impl SpiderWindow {
                     let text = self.display.format(current);
                     row.col(|ui| {
                         if current != result.last_value {
-                            ui.label(RichText::new(text).color(Color32::KHAKI));
+                            ui.label(Into::<WidgetText>::into(RichText::new(text).color(Color32::KHAKI)));
                         } else {
                             ui.label(text);
                         }
                     });
                 })
-            })
+            });
     }
 
     fn collect_options(&self) -> eyre::Result<SearchOptions> {

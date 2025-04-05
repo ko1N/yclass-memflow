@@ -181,7 +181,8 @@ impl App for YClassApp {
                     .try_write()
                 {
                     *process = None;
-                    frame.set_window_title("YClass");
+                    
+                    // frame.set_window_title("YClass");
                 } else {
                     state.toasts.warning("Process is currently in use");
                 }
@@ -198,7 +199,7 @@ impl App for YClassApp {
                     {
                         match YProcess::attach(os.clone(), pid) {
                             Ok(proc) => {
-                                frame.set_window_title(&format!("YClass - Attached to {pid}"));
+                                // frame.set_window_title(&format!("YClass - Attached to {pid}"));
                                 match proc.name() {
                                     Ok(name) => {
                                         state.config.last_attached_process_name = Some(name);

@@ -5,8 +5,8 @@ use crate::{
     state::{GlobalState, StateRef},
 };
 use eframe::{
-    egui::{style::Margin, Button, Context, Frame, RichText, TopBottomPanel, Ui, WidgetText},
-    epaint::{vec2, Color32, Rounding},
+    egui::{Button, Context, CornerRadius, Frame, Margin, RichText, TopBottomPanel, Ui, WidgetText},
+    epaint::{vec2, Color32},
 };
 use memflow::prelude::v1::*;
 
@@ -72,7 +72,7 @@ impl ToolBarPanel {
 
             // if the process info window is open then tell it to refresh
             if self.ps_info_window.visible() {
-                self.ps_info_window.refresh_info();
+                self.ps_info_window.visible();
             }
         }
 
@@ -87,8 +87,8 @@ impl ToolBarPanel {
 
         let style = ctx.style();
         let frame = Frame {
-            inner_margin: Margin::same(0.),
-            rounding: Rounding::none(),
+            inner_margin: Margin::same(0),
+            corner_radius: CornerRadius::ZERO,
             fill: style.visuals.window_fill(),
             stroke: style.visuals.window_stroke(),
             ..Default::default()
@@ -99,7 +99,7 @@ impl ToolBarPanel {
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 0.;
-                    ui.visuals_mut().widgets.inactive.rounding = Rounding::none();
+                    ui.visuals_mut().widgets.inactive.corner_radius = CornerRadius::ZERO;
 
                     ui.menu_button("Project", |ui| self.project_menu(ui));
                     ui.menu_button("Process", |ui| self.process_menu(ui, &mut response));

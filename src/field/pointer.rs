@@ -104,7 +104,7 @@ impl PointerField {
             ctx.select(self.id);
         }
 
-        popup_below_widget(ui, Id::new(ctx.current_id), &r, |ui| {
+        popup_below_widget(ui, Id::new(ctx.current_id), &r, eframe::egui::PopupCloseBehavior::CloseOnClick,|ui| {
             ui.set_width(80.);
             ui.vertical_centered_justified(|ui| {
                 for cl in ctx.class_list.classes() {
@@ -143,7 +143,7 @@ impl PointerField {
                 selection: ctx.selection,
                 current_container: cid,
                 // Will be immideately reassigned.
-                current_id: Id::null(),
+                current_id: Id::NULL,
                 process: ctx.process,
                 toasts: ctx.toasts,
                 level_rng: &rng,

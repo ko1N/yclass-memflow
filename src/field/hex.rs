@@ -176,7 +176,7 @@ impl<const N: usize> HexField<N> {
                                 *response = Some(FieldResponse::LockScroll);
                             }
                         } else {
-                            let yd = ui.input(|i| i.scroll_delta.y);
+                            let yd = ui.input(|i| i.raw_scroll_delta.y);
                             if yd < 0. {
                                 preview.offest = preview.offest.saturating_add(8);
                             } else if yd > 0. {
