@@ -175,22 +175,35 @@ impl ToolBarPanel {
     }
 
     fn run_hotkeys(&mut self, ctx: &Context, response: &mut Option<ToolBarResponse>) {
-        let state = &mut *self.state.borrow_mut();
-        let input = &ctx.input(|i| i.clone());
+        
+        let do_attach = {
+            // we should not leave a mutable borrow open over top of all these calls
+            // global state is fricken stupid, this system should probably be adjusted
+            // to something more rusty. No one wants runtime panics or we'd be on c++
+            let hk_state = &self.state.borrow().hotkeys;
+            let input = &ctx.input(|i| i.clone());
 
-        if state.hotkeys.pressed("process_info", input) {
-            self.ps_info_window.toggle();
-        }
+            if hk_state.pressed("process_info", input) {
+                self.ps_info_window.toggle();
+            }
 
-        if state.hotkeys.pressed("attach_memflow", input) {
-            self.mf_attach_window.toggle();
-        }
+            if hk_state.pressed("attach_memflow", input) {
+                self.mf_attach_window.toggle();
+            }
 
-        if state.hotkeys.pressed("attach_process", input) {
-            self.ps_attach_window.toggle();
-        }
+            if hk_state.pressed("attach_process", input) {
+                self.ps_attach_window.toggle();
+            }
 
-        if state.hotkeys.pressed("attach_recent", input) {
+            if hk_state.pressed("attach_recent", input) {
+                true
+            } else {
+                false
+            }
+        };
+
+        if(do_attach) {
+            let state = &mut *self.state.borrow_mut();
             if let Some(name) = state.config.last_attached_process_name.as_ref().cloned() {
                 attach_to_process(state, &name, response);
             }
