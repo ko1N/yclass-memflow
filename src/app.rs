@@ -2,7 +2,7 @@ use crate::{
     context::Selection,
     field::allocate_padding,
     gui::{ClassListPanel, InspectorPanel, ToolBarPanel, ToolBarResponse},
-    process::Process,
+    process::YProcess,
     state::StateRef,
 };
 use eframe::{egui::Context, epaint::Color32, App, Frame};
@@ -196,7 +196,7 @@ impl App for YClassApp {
                         .clone() /* ??? */
                         .try_write()
                     {
-                        match Process::attach(os.clone(), pid) {
+                        match YProcess::attach(os.clone(), pid) {
                             Ok(proc) => {
                                 frame.set_window_title(&format!("YClass - Attached to {pid}"));
                                 match proc.name() {

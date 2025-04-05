@@ -1,5 +1,5 @@
 use super::{bytes_to_value, SearchOptions, SearchResult};
-use crate::process::Process;
+use crate::process::YProcess;
 use parking_lot::{Mutex, RwLock};
 use std::{
     sync::{
@@ -36,7 +36,7 @@ impl ScannerState {
         self.active
     }
 
-    pub fn begin(&mut self, process: &Arc<RwLock<Option<Process>>>, options: SearchOptions) {
+    pub fn begin(&mut self, process: &Arc<RwLock<Option<YProcess>>>, options: SearchOptions) {
         self.active = true;
         self.start = Instant::now();
         self.counter.store(0, Ordering::SeqCst);
@@ -68,7 +68,7 @@ impl ScannerState {
 
 fn recursive_first_search(
     counter: Arc<AtomicU16>,
-    process: Arc<RwLock<Option<Process>>>,
+    process: Arc<RwLock<Option<YProcess>>>,
     results: Arc<Mutex<Vec<SearchResult>>>,
     opts: SearchOptions,
 ) {

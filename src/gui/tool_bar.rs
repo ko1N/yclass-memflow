@@ -1,4 +1,4 @@
-use super::{GeneratorWindow, MemflowAttachWindow, ProcessAttachWindow, SpiderWindow};
+use super::{GeneratorWindow, MemflowAttachWindow, ProcessAttachWindow, ProcessInfoWindow, SpiderWindow};
 use crate::{
     class::ClassList,
     field::FieldKind,
@@ -40,6 +40,7 @@ pub enum ToolBarResponse {
 pub struct ToolBarPanel {
     mf_attach_window: MemflowAttachWindow,
     ps_attach_window: ProcessAttachWindow,
+    ps_info_window: ProcessInfoWindow,
     generator_window: GeneratorWindow,
     spider_window: SpiderWindow,
     state: StateRef,
@@ -51,6 +52,7 @@ impl ToolBarPanel {
             state,
             mf_attach_window: MemflowAttachWindow::new(state),
             ps_attach_window: ProcessAttachWindow::new(state),
+            ps_info_window: ProcessInfoWindow::new(state),
             generator_window: GeneratorWindow::new(state),
             spider_window: SpiderWindow::new(state),
         }
@@ -67,7 +69,14 @@ impl ToolBarPanel {
         if let Some(pid) = self.ps_attach_window.show(ctx) {
             response = Some(ToolBarResponse::ProcessAttach(pid));
             self.ps_attach_window.toggle();
+
+            // if the process info window is open then tell it to refresh
+            if self.ps_info_window.visible() {
+                self.ps_info_window.refresh_info();
+            }
         }
+
+        self.ps_info_window.show(ctx);
 
         self.generator_window.show(ctx);
         if let Err(e) = self.spider_window.show(ctx) {
@@ -169,6 +178,10 @@ impl ToolBarPanel {
         let state = &mut *self.state.borrow_mut();
         let input = &ctx.input(|i| i.clone());
 
+        if state.hotkeys.pressed("process_info", input) {
+            self.ps_info_window.toggle();
+        }
+
         if state.hotkeys.pressed("attach_memflow", input) {
             self.mf_attach_window.toggle();
         }
@@ -238,6 +251,16 @@ impl ToolBarPanel {
 
     fn process_menu(&mut self, ui: &mut Ui, response: &mut Option<ToolBarResponse>) {
         ui.set_width(200.);
+
+        if shortcut_button(
+            ui,
+            &mut *self.state.borrow_mut(),
+            "process_info",
+            "Process Info",
+        ) {
+            self.ps_info_window.toggle();
+            ui.close_menu();
+        }
 
         if shortcut_button(
             ui,

@@ -1,7 +1,7 @@
 use crate::{
     class::{ClassId, ClassList},
     field::FieldId,
-    process::Process,
+    process::YProcess,
 };
 use eframe::egui::Id;
 use egui_notify::Toasts;
@@ -18,7 +18,7 @@ pub struct InspectionContext<'a> {
     pub address: usize,
     pub offset: usize,
 
-    pub process: &'a Process,
+    pub process: &'a YProcess,
     pub class_list: &'a ClassList,
     pub toasts: &'a mut Toasts,
 }

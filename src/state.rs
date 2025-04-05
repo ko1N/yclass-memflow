@@ -1,6 +1,6 @@
 use crate::{
     class::ClassList, config::YClassConfig, context::Selection, hotkeys::HotkeyManager,
-    process::Process, project::ProjectData,
+    process::YProcess, project::ProjectData,
 };
 use egui_notify::Toasts;
 use parking_lot::RwLock;
@@ -21,7 +21,7 @@ pub struct GlobalState {
     pub selection: Option<Selection>,
     pub inventory: Inventory,
     pub os: Arc<RwLock<Option<OsInstanceArcBox<'static>>>>,
-    pub process: Arc<RwLock<Option<Process>>>,
+    pub process: Arc<RwLock<Option<YProcess>>>,
     pub hotkeys: HotkeyManager,
     pub class_list: ClassList,
     pub config: YClassConfig,

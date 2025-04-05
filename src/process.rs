@@ -1,11 +1,11 @@
-use memflow::prelude::v1::*;
+use memflow::{os::Process, os::Os, prelude::*};
 use parking_lot::RwLock;
 
-pub struct Process {
+pub struct YProcess {
     inner: RwLock<IntoProcessInstanceArcBox<'static>>,
 }
 
-impl Process {
+impl YProcess {
     pub fn attach(os: OsInstanceArcBox<'static>, pid: u32) -> Result<Self> {
         // TODO: maps
         let inner = os.into_process_by_pid(pid)?;
@@ -35,5 +35,10 @@ impl Process {
     pub fn name(&self) -> Result<String> {
         use memflow::os::Process;
         Ok(self.inner.read().info().name.to_string())
+    }
+
+    pub fn info(&self) -> ProcessInfo {
+        let p = self.inner.read();
+        p.info().clone()
     }
 }

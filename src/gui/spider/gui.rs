@@ -6,7 +6,7 @@ use crate::{
         spider::{bytes_to_value, parse_kind_to_value, SearchOptions},
         TextEditBind, TextEditFromStrBind,
     },
-    process::Process,
+    process::YProcess,
     state::StateRef,
     value::Value,
 };
@@ -279,7 +279,7 @@ impl SpiderWindow {
             .transpose()
     }
 
-    fn display_results(&mut self, process: &Process, ui: &mut Ui) {
+    fn display_results(&mut self, process: &YProcess, ui: &mut Ui) {
         const DATA_HEIGHT: f32 = 14.;
         ui.style_mut().override_font_id = Some(FontId::monospace(DATA_HEIGHT));
 

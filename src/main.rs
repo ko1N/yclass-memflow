@@ -60,6 +60,7 @@ fn main() {
             cc.egui_ctx.set_fonts(fonts);
 
             let mut hotkeys = HotkeyManager::default();
+            hotkeys.register("process_info", Key::P, Modifiers::ALT);
             hotkeys.register("attach_memflow", Key::M, Modifiers::ALT);
             hotkeys.register("attach_process", Key::A, Modifiers::ALT);
             hotkeys.register("attach_recent", Key::A, Modifiers::ALT | Modifiers::CTRL);
