@@ -1,6 +1,6 @@
 [package]
 name = "yclass-memflow"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Inspect and recreate in-memory data structures"
 license = "MIT"
