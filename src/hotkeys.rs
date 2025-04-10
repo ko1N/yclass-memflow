@@ -11,8 +11,8 @@ pub struct HotkeyManager {
 }
 
 impl HotkeyManager {
-    pub fn register(&mut self, name: &'static str, key: Key, modifiers: Modifiers) -> &mut Self {
-        self.names.insert(name, KeyboardShortcut { key, modifiers });
+    pub fn register(&mut self, name: &'static str, logical_key: Key, modifiers: Modifiers) -> &mut Self {
+        self.names.insert(name, KeyboardShortcut { logical_key, modifiers });
 
         self
     }
@@ -22,7 +22,7 @@ impl HotkeyManager {
             return false;
         };
 
-        input.key_pressed(shortcut.key) && input.modifiers.matches(shortcut.modifiers)
+        input.key_pressed(shortcut.logical_key) && input.modifiers.matches(shortcut.modifiers)
     }
 
     pub fn format(&self, name: &'static str, ctx: &Context) -> String {

@@ -2,7 +2,7 @@ use super::{
     display_field_name, display_field_prelude, display_field_value, next_id, CodegenData, Field,
     FieldId, FieldKind, FieldResponse, NamedState,
 };
-use crate::{context::InspectionContext, generator::Generator, process::Process};
+use crate::{context::InspectionContext, generator::Generator, process::YProcess};
 use eframe::{
     egui::{Label, Sense, Ui},
     epaint::{text::LayoutJob, Color32},
@@ -31,7 +31,7 @@ impl<const N: usize> IntField<N> {
         }
     }
 
-    fn write_value(&self, new: &str, address: usize, proc: &Process) -> bool {
+    fn write_value(&self, new: &str, address: usize, proc: &YProcess) -> bool {
         macro_rules! do_arm {
             ($buf:ident, $addr:ident, $proc:ident, $new:ident, $type:ty) => {
                 if let Ok(val) = $new.parse::<$type>() {

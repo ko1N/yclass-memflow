@@ -1,12 +1,12 @@
-use super::{GeneratorWindow, MemflowAttachWindow, ProcessAttachWindow, SpiderWindow};
+use super::{GeneratorWindow, MemflowAttachWindow, ProcessAttachWindow, ProcessInfoWindow, SpiderWindow};
 use crate::{
     class::ClassList,
     field::FieldKind,
     state::{GlobalState, StateRef},
 };
 use eframe::{
-    egui::{style::Margin, Button, Context, Frame, RichText, TopBottomPanel, Ui, WidgetText},
-    epaint::{vec2, Color32, Rounding},
+    egui::{Button, Context, CornerRadius, Frame, Margin, RichText, TopBottomPanel, Ui, WidgetText},
+    epaint::{vec2, Color32},
 };
 use memflow::prelude::v1::*;
 
@@ -40,6 +40,7 @@ pub enum ToolBarResponse {
 pub struct ToolBarPanel {
     mf_attach_window: MemflowAttachWindow,
     ps_attach_window: ProcessAttachWindow,
+    ps_info_window: ProcessInfoWindow,
     generator_window: GeneratorWindow,
     spider_window: SpiderWindow,
     state: StateRef,
@@ -51,6 +52,7 @@ impl ToolBarPanel {
             state,
             mf_attach_window: MemflowAttachWindow::new(state),
             ps_attach_window: ProcessAttachWindow::new(state),
+            ps_info_window: ProcessInfoWindow::new(state),
             generator_window: GeneratorWindow::new(state),
             spider_window: SpiderWindow::new(state),
         }
@@ -67,7 +69,14 @@ impl ToolBarPanel {
         if let Some(pid) = self.ps_attach_window.show(ctx) {
             response = Some(ToolBarResponse::ProcessAttach(pid));
             self.ps_attach_window.toggle();
+
+            // if the process info window is open then tell it to refresh
+            if self.ps_info_window.visible() {
+                self.ps_info_window.visible();
+            }
         }
+
+        self.ps_info_window.show(ctx);
 
         self.generator_window.show(ctx);
         if let Err(e) = self.spider_window.show(ctx) {
@@ -78,8 +87,8 @@ impl ToolBarPanel {
 
         let style = ctx.style();
         let frame = Frame {
-            inner_margin: Margin::same(0.),
-            rounding: Rounding::none(),
+            inner_margin: Margin::same(0),
+            corner_radius: CornerRadius::ZERO,
             fill: style.visuals.window_fill(),
             stroke: style.visuals.window_stroke(),
             ..Default::default()
@@ -90,7 +99,7 @@ impl ToolBarPanel {
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 0.;
-                    ui.visuals_mut().widgets.inactive.rounding = Rounding::none();
+                    ui.visuals_mut().widgets.inactive.corner_radius = CornerRadius::ZERO;
 
                     ui.menu_button("Project", |ui| self.project_menu(ui));
                     ui.menu_button("Process", |ui| self.process_menu(ui, &mut response));
@@ -166,18 +175,35 @@ impl ToolBarPanel {
     }
 
     fn run_hotkeys(&mut self, ctx: &Context, response: &mut Option<ToolBarResponse>) {
-        let state = &mut *self.state.borrow_mut();
-        let input = &*ctx.input();
+        
+        let do_attach = {
+            // we should not leave a mutable borrow open over top of all these calls
+            // global state is fricken stupid, this system should probably be adjusted
+            // to something more rusty. No one wants runtime panics or we'd be on c++
+            let hk_state = &self.state.borrow().hotkeys;
+            let input = &ctx.input(|i| i.clone());
 
-        if state.hotkeys.pressed("attach_memflow", input) {
-            self.mf_attach_window.toggle();
-        }
+            if hk_state.pressed("process_info", input) {
+                self.ps_info_window.toggle();
+            }
 
-        if state.hotkeys.pressed("attach_process", input) {
-            self.ps_attach_window.toggle();
-        }
+            if hk_state.pressed("attach_memflow", input) {
+                self.mf_attach_window.toggle();
+            }
 
-        if state.hotkeys.pressed("attach_recent", input) {
+            if hk_state.pressed("attach_process", input) {
+                self.ps_attach_window.toggle();
+            }
+
+            if hk_state.pressed("attach_recent", input) {
+                true
+            } else {
+                false
+            }
+        };
+
+        if(do_attach) {
+            let state = &mut *self.state.borrow_mut();
             if let Some(name) = state.config.last_attached_process_name.as_ref().cloned() {
                 attach_to_process(state, &name, response);
             }
@@ -238,6 +264,16 @@ impl ToolBarPanel {
 
     fn process_menu(&mut self, ui: &mut Ui, response: &mut Option<ToolBarResponse>) {
         ui.set_width(200.);
+
+        if shortcut_button(
+            ui,
+            &mut *self.state.borrow_mut(),
+            "process_info",
+            "Process Info",
+        ) {
+            self.ps_info_window.toggle();
+            ui.close_menu();
+        }
 
         if shortcut_button(
             ui,

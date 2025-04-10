@@ -3,7 +3,7 @@ pub use gui::*;
 mod scanner;
 pub(crate) use scanner::*;
 
-use crate::{field::FieldKind, process::Process, value::Value};
+use crate::{field::FieldKind, process::YProcess, value::Value};
 use std::sync::Arc;
 
 #[derive(PartialEq, Clone, Copy)]
@@ -59,7 +59,7 @@ pub(crate) struct SearchResult {
 impl SearchResult {
     pub fn should_remain(
         &mut self,
-        p: &Process,
+        p: &YProcess,
         mut address: usize,
         filter: FilterMode,
         new_value: Value,

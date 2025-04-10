@@ -99,12 +99,12 @@ impl PointerField {
 
         let r = ui.add(Label::new(job).sense(Sense::click()));
         if r.secondary_clicked() {
-            ui.memory().toggle_popup(Id::new(ctx.current_id))
+            ui.memory_mut(|m| m.toggle_popup(Id::new(ctx.current_id)));
         } else if r.clicked() {
             ctx.select(self.id);
         }
 
-        popup_below_widget(ui, Id::new(ctx.current_id), &r, |ui| {
+        popup_below_widget(ui, Id::new(ctx.current_id), &r, eframe::egui::PopupCloseBehavior::CloseOnClick,|ui| {
             ui.set_width(80.);
             ui.vertical_centered_justified(|ui| {
                 for cl in ctx.class_list.classes() {
@@ -124,7 +124,7 @@ impl PointerField {
     ) -> Option<FieldResponse> {
         if !ctx.process.can_read(address) {
             ui.heading(
-                RichText::new("Pointer's body is only allowed at valid addresses")
+                RichText::new(format!("Can't read memory at address {address:#X}"))
                     .color(Color32::RED)
                     .font(FID_M),
             );
@@ -143,7 +143,7 @@ impl PointerField {
                 selection: ctx.selection,
                 current_container: cid,
                 // Will be immideately reassigned.
-                current_id: Id::null(),
+                current_id: Id::NULL,
                 process: ctx.process,
                 toasts: ctx.toasts,
                 level_rng: &rng,
@@ -220,14 +220,10 @@ impl Field for PointerField {
         generator.add_field(
             self.state.name.borrow().as_str(),
             FieldKind::Ptr,
-            Some(
-                &data
-                    .classes
-                    .iter()
-                    .find(|c| c.id() == self.class_id.get().unwrap())
-                    .unwrap()
-                    .name,
-            ),
+            data.classes
+                .iter()
+                .find(|c| c.id() == self.class_id.get().unwrap())
+                .map(|c| c.name.as_ref()),
         );
     }
 }

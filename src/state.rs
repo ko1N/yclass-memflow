@@ -1,6 +1,6 @@
 use crate::{
     class::ClassList, config::YClassConfig, context::Selection, hotkeys::HotkeyManager,
-    process::Process, project::ProjectData,
+    process::YProcess, project::ProjectData,
 };
 use egui_notify::Toasts;
 use parking_lot::RwLock;
@@ -21,9 +21,8 @@ pub struct GlobalState {
     pub selection: Option<Selection>,
     pub inventory: Inventory,
     pub os: Arc<RwLock<Option<OsInstanceArcBox<'static>>>>,
-    pub process: Arc<RwLock<Option<Process>>>,
+    pub process: Arc<RwLock<Option<YProcess>>>,
     pub hotkeys: HotkeyManager,
-    pub inspect_address: usize,
     pub class_list: ClassList,
     pub config: YClassConfig,
     pub toasts: Toasts,
@@ -39,8 +38,6 @@ impl Default for GlobalState {
         let inventory = Inventory::scan();
 
         Self {
-            #[cfg(debug_assertions)]
-            inspect_address: config.last_address.unwrap_or(0),
             hotkeys: HotkeyManager::default(),
             class_list: ClassList::default(),
             last_opened_project: None,
@@ -48,8 +45,6 @@ impl Default for GlobalState {
             inventory,
             os: Arc::default(),
             process: Arc::default(),
-            #[cfg(not(debug_assertions))]
-            inspect_address: 0,
             selection: None,
             dummy: true,
             config,

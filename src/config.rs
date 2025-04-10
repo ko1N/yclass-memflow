@@ -4,8 +4,6 @@ use std::{collections::HashSet, fs, path::PathBuf};
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct YClassConfig {
     pub last_attached_process_name: Option<String>,
-    #[cfg(debug_assertions)]
-    pub last_address: Option<usize>,
 
     pub recent_projects: Option<HashSet<PathBuf>>,
     pub dpi: Option<f32>,

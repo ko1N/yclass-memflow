@@ -2,7 +2,7 @@ use crate::{
     context::Selection,
     field::allocate_padding,
     gui::{ClassListPanel, InspectorPanel, ToolBarPanel, ToolBarResponse},
-    process::Process,
+    process::YProcess,
     state::StateRef,
 };
 use eframe::{egui::Context, epaint::Color32, App, Frame};
@@ -181,7 +181,8 @@ impl App for YClassApp {
                     .try_write()
                 {
                     *process = None;
-                    frame.set_window_title("YClass");
+                    
+                    // frame.set_window_title("YClass");
                 } else {
                     state.toasts.warning("Process is currently in use");
                 }
@@ -196,9 +197,9 @@ impl App for YClassApp {
                         .clone() /* ??? */
                         .try_write()
                     {
-                        match Process::attach(os.clone(), pid) {
+                        match YProcess::attach(os.clone(), pid) {
                             Ok(proc) => {
-                                frame.set_window_title(&format!("YClass - Attached to {pid}"));
+                                // frame.set_window_title(&format!("YClass - Attached to {pid}"));
                                 match proc.name() {
                                     Ok(name) => {
                                         state.config.last_attached_process_name = Some(name);
@@ -231,6 +232,7 @@ impl App for YClassApp {
 
         self.class_list.show(ctx);
         self.inspector.show(ctx);
+        crate::gui::show_logger(ctx);
 
         let mut style = (*ctx.style()).clone();
         let saved = style.clone();
